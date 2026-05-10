@@ -29,26 +29,52 @@ function App() {
     updateCompanyInfo
   } = useData();
   
-  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState(''); // '', 'checking', 'available', 'not-available', 'downloaded', 'error'
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     if (window.electronAPI) {
-      window.electronAPI.receive('update-available', () => {
-        setUpdateAvailable(true);
+      window.electronAPI.receive('update_available', (version) => {
+        setUpdateStatus('available');
+        setIsUpdating(true);
+        alert(`Yeni sürüm bulundu (${version})! Güncelleme otomatik olarak indiriliyor...`);
       });
-      window.electronAPI.receive('update-downloaded', () => {
+
+      window.electronAPI.receive('update_not_available', () => {
+        setUpdateStatus('not-available');
         setIsUpdating(false);
-        // auto-updater handles restart in main.cjs on update-downloaded usually, 
-        // but let's be safe.
+        alert("Zaten son sürümü kullanıyorsunuz.");
+      });
+
+      window.electronAPI.receive('update_downloaded', () => {
+        setUpdateStatus('downloaded');
+        setIsUpdating(false);
+        if (confirm("Güncelleme indirildi. Uygulamanın güncellenmesi için şimdi yeniden başlatılsın mı?")) {
+          window.electronAPI.send('restart_app');
+        }
+      });
+
+      window.electronAPI.receive('update_error', (message) => {
+        setUpdateStatus('error');
+        setIsUpdating(false);
+        alert(`Güncelleme hatası: ${message}`);
       });
     }
   }, []);
 
-  const handleUpdate = async () => {
+  const handleUpdateCheck = async () => {
     if (window.electronAPI) {
+      setUpdateStatus('checking');
       setIsUpdating(true);
-      await window.electronAPI.invoke('start-update');
+      try {
+        await window.electronAPI.invoke('check-for-updates');
+      } catch (err) {
+        setUpdateStatus('error');
+        setIsUpdating(false);
+        alert("Güncelleme kontrolü sırasında bir hata oluştu.");
+      }
+    } else {
+      alert("Güncelleme sistemi sadece paketlenmiş uygulamada çalışır.");
     }
   };
 
@@ -86,14 +112,7 @@ function App() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <button 
-            onClick={() => {
-              if (window.electronAPI && window.electronAPI.checkForUpdates) {
-                window.electronAPI.checkForUpdates();
-                alert("Güncelleme kontrol ediliyor... Yeni bir sürüm varsa otomatik olarak indirilecektir.");
-              } else {
-                alert("Güncelleme sistemi şu an aktiftir. Eğer bir sürüm değişikliği yaptıysanız sistem bunu otomatik algılayacaktır.");
-              }
-            }}
+            onClick={handleUpdateCheck}
             disabled={isUpdating}
             style={{ 
               backgroundColor: '#f97316', 
@@ -103,20 +122,24 @@ function App() {
               borderRadius: '6px', 
               fontSize: '10px', 
               fontWeight: '900', 
-              cursor: 'pointer',
+              cursor: isUpdating ? 'default' : 'pointer',
               boxShadow: '0 0 15px rgba(249, 115, 22, 0.4)',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '6px',
+              opacity: isUpdating ? 0.7 : 1
             }}
           >
             <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'white', animation: 'pulse 1.5s infinite' }} />
-            {isUpdating ? 'GÜNCELLEME İNDİRİLİYOR...' : 'SON SÜRÜMÜ GÜNCELLE'}
+            {updateStatus === 'checking' ? 'KONTROL EDİLİYOR...' : 
+             updateStatus === 'available' ? 'GÜNCELLEME İNDİRİLİYOR...' : 
+             'SON SÜRÜMÜ GÜNCELLE'}
           </button>
           <div style={{ textAlign: 'right', lineHeight: '1.1' }}>
             <div style={{ fontSize: '9px', fontWeight: '900', color: '#f97316' }}>V40 {data.appTag || 'AETHER'}</div>
-            <div style={{ fontSize: '8px', color: '#64748b' }}>Version {data.appVersion || '3.0.1'}</div>
+            <div style={{ fontSize: '8px', color: '#64748b' }}>Version 3.0.0.0</div>
           </div>
+
           <button 
             onClick={logout}
             style={{ background: 'none', border: 'none', color: '#f87171', fontSize: '10px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}

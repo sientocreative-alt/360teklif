@@ -406,8 +406,11 @@ const CustomerPanel = ({
             </div>
 
             <div className="final-box">
-              <div style={{ fontSize: '9px', fontWeight: '900', letterSpacing: '3px', color: '#94a3b8', marginBottom: '8px' }}>GENEL TOPLAM</div>
-              <div style={{ fontSize: '32px', fontWeight: '950', color: '#1e293b' }}>{results.grandTotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</div>
+              <div style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '2px', color: '#94a3b8', marginBottom: '10px', textTransform: 'uppercase' }}>Teklif Genel Toplamı</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px' }}>
+                <div style={{ fontSize: '36px', fontWeight: '950', color: '#1e293b', letterSpacing: '-1px' }}>{results.grandTotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
+                <div style={{ fontSize: '18px', fontWeight: '800', color: '#f97316' }}>₺</div>
+              </div>
             </div>
 
             <button 

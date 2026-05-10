@@ -231,12 +231,25 @@ body {
 }
 
 .final-box {
-  background: #fff7ed;
-  border: 1px solid #fdba74;
-  border-radius: 24px;
-  padding: 20px;
+  background: linear-gradient(135deg, #fffcf9 0%, #fff7ed 100%);
+  border: 2px solid #fed7aa;
+  border-radius: 28px;
+  padding: 24px;
   text-align: center;
-  margin: 25px 0;
+  margin: 30px 0;
+  box-shadow: 0 10px 25px rgba(249, 115, 22, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.final-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--accent-orange);
 }
 
 

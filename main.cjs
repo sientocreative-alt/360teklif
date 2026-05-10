@@ -35,27 +35,7 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     if (!isDev) {
-      // --- Auto Updater Events ---
-  autoUpdater.on('update-available', () => {
-    mainWindow.webContents.send('update-available');
-  });
-
-  ipcMain.handle('check-for-updates', () => {
-    autoUpdater.checkForUpdatesAndNotify();
-  });
-
-  ipcMain.handle('start-update', () => {
-    autoUpdater.downloadUpdate();
-  });
-
-  autoUpdater.on('update-downloaded', () => {
-    autoUpdater.quitAndInstall();
-  });
-
-  // Initial Check
-  setTimeout(() => {
-    autoUpdater.checkForUpdatesAndNotify();
-  }, 5000);
+      setupAutoUpdater();
     }
   });
 
@@ -64,8 +44,58 @@ function createWindow() {
   });
 }
 
-let serverInstance = null;
+function setupAutoUpdater() {
+  // Config
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
 
+  // Events
+  autoUpdater.on('checking-for-update', () => {
+    console.log('Checking for update...');
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    console.log('Update available:', info.version);
+    if (mainWindow) {
+      mainWindow.webContents.send('update_available', info.version);
+    }
+  });
+
+  autoUpdater.on('update-not-available', (info) => {
+    console.log('Update not available.');
+    if (mainWindow) {
+      mainWindow.webContents.send('update_not_available');
+    }
+  });
+
+  autoUpdater.on('error', (err) => {
+    console.error('Update error:', err);
+    if (mainWindow) {
+      mainWindow.webContents.send('update_error', err.message);
+    }
+  });
+
+  autoUpdater.on('download-progress', (progressObj) => {
+    let log_message = "Download speed: " + progressObj.bytesPerSecond;
+    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+    console.log(log_message);
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('Update downloaded');
+    if (mainWindow) {
+      mainWindow.webContents.send('update_downloaded');
+    }
+  });
+
+  // Manual trigger via IPC
+  ipcMain.handle('check-for-updates', () => {
+    return autoUpdater.checkForUpdatesAndNotify();
+  });
+}
+
+let serverInstance = null;
 async function startApp() {
   const userDataPath = app.getPath('userData');
   const dbPath = path.join(userDataPath, 'database.sqlite');
@@ -113,17 +143,7 @@ ipcMain.handle('get-api-url', () => {
   return null;
 });
 
-ipcMain.on('toMain', (event, arg) => {
-  if (arg.action === 'restart_app') {
-    autoUpdater.quitAndInstall();
-  }
+ipcMain.on('restart_app', () => {
+  autoUpdater.quitAndInstall();
 });
 
-// --- Auto Updater ---
-autoUpdater.on('update-available', () => {
-  if (mainWindow) mainWindow.webContents.send('update_available');
-});
-
-autoUpdater.on('update-downloaded', () => {
-  if (mainWindow) mainWindow.webContents.send('update_downloaded');
-});
