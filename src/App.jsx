@@ -29,7 +29,8 @@ function App() {
     updateCompanyInfo
   } = useData();
   
-  const [updateStatus, setUpdateStatus] = useState(''); // '', 'checking', 'available', 'not-available', 'downloaded', 'error'
+  const [updateStatus, setUpdateStatus] = useState(''); 
+  const [updatePercent, setUpdatePercent] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
@@ -37,19 +38,25 @@ function App() {
       window.electronAPI.receive('update_available', (version) => {
         setUpdateStatus('available');
         setIsUpdating(true);
-        alert(`Yeni sürüm bulundu (${version})! Güncelleme otomatik olarak indiriliyor...`);
+        // We don't alert here to not block the auto-download
+        console.log(`Yeni sürüm bulundu: ${version}`);
+      });
+
+      window.electronAPI.receive('update_progress', (percent) => {
+        setUpdateStatus('downloading');
+        setUpdatePercent(percent);
       });
 
       window.electronAPI.receive('update_not_available', () => {
         setUpdateStatus('not-available');
         setIsUpdating(false);
-        alert("Zaten son sürümü kullanıyorsunuz.");
+        alert("Sisteminiz güncel. En son sürümü kullanıyorsunuz.");
       });
 
       window.electronAPI.receive('update_downloaded', () => {
         setUpdateStatus('downloaded');
         setIsUpdating(false);
-        if (confirm("Güncelleme indirildi. Uygulamanın güncellenmesi için şimdi yeniden başlatılsın mı?")) {
+        if (confirm("Güncelleme başarıyla indirildi. Uygulama güncellenerek yeniden başlatılsın mı?")) {
           window.electronAPI.send('restart_app');
         }
       });
@@ -63,18 +70,21 @@ function App() {
   }, []);
 
   const handleUpdateCheck = async () => {
-    if (window.electronAPI) {
-      setUpdateStatus('checking');
-      setIsUpdating(true);
-      try {
+    if (isUpdating) return;
+    
+    setUpdateStatus('checking');
+    setIsUpdating(true);
+    
+    try {
+      if (window.electronAPI) {
         await window.electronAPI.invoke('check-for-updates');
-      } catch (err) {
-        setUpdateStatus('error');
-        setIsUpdating(false);
-        alert("Güncelleme kontrolü sırasında bir hata oluştu.");
+      } else {
+        throw new Error("Electron API bulunamadı.");
       }
-    } else {
-      alert("Güncelleme sistemi sadece paketlenmiş uygulamada çalışır.");
+    } catch (err) {
+      setUpdateStatus('error');
+      setIsUpdating(false);
+      alert("Güncelleme kontrolü başlatılamadı. Lütfen internet bağlantınızı kontrol edin.");
     }
   };
 
@@ -132,7 +142,8 @@ function App() {
           >
             <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'white', animation: 'pulse 1.5s infinite' }} />
             {updateStatus === 'checking' ? 'KONTROL EDİLİYOR...' : 
-             updateStatus === 'available' ? 'GÜNCELLEME İNDİRİLİYOR...' : 
+             updateStatus === 'downloading' ? `İNDİRİLİYOR %${updatePercent}` :
+             updateStatus === 'available' ? 'GÜNCELLEME BULUNDU...' : 
              'SON SÜRÜMÜ GÜNCELLE'}
           </button>
           <div style={{ textAlign: 'right', lineHeight: '1.1' }}>

@@ -13,7 +13,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'update_available', 
       'update_not_available', 
       'update_downloaded', 
-      'update_error'
+      'update_error',
+      'update_progress'
     ];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (event, ...args) => func(...args));

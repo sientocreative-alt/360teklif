@@ -34,9 +34,7 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-    if (!isDev) {
-      setupAutoUpdater();
-    }
+    setupAutoUpdater();
   });
 
   mainWindow.on('closed', () => {
@@ -48,6 +46,9 @@ function setupAutoUpdater() {
   // Config
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
+
+  // Logs (will show in console)
+  console.log('Auto-updater initialized. Current version:', app.getVersion());
 
   // Events
   autoUpdater.on('checking-for-update', () => {
@@ -71,27 +72,35 @@ function setupAutoUpdater() {
   autoUpdater.on('error', (err) => {
     console.error('Update error:', err);
     if (mainWindow) {
-      mainWindow.webContents.send('update_error', err.message);
+      mainWindow.webContents.send('update_error', err.message || 'Bilinmeyen bir hata oluştu');
     }
   });
 
   autoUpdater.on('download-progress', (progressObj) => {
-    let log_message = "Download speed: " + progressObj.bytesPerSecond;
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    console.log(log_message);
+    const percent = Math.round(progressObj.percent);
+    console.log(`Download progress: ${percent}%`);
+    if (mainWindow) {
+      mainWindow.webContents.send('update_progress', percent);
+    }
   });
 
   autoUpdater.on('update-downloaded', (info) => {
-    console.log('Update downloaded');
+    console.log('Update downloaded and ready to install.');
     if (mainWindow) {
       mainWindow.webContents.send('update_downloaded');
     }
   });
 
   // Manual trigger via IPC
-  ipcMain.handle('check-for-updates', () => {
-    return autoUpdater.checkForUpdatesAndNotify();
+  ipcMain.handle('check-for-updates', async () => {
+    console.log('Manual update check triggered.');
+    try {
+      const result = await autoUpdater.checkForUpdates();
+      return result;
+    } catch (error) {
+      console.error('Manual check error:', error);
+      throw error;
+    }
   });
 }
 
