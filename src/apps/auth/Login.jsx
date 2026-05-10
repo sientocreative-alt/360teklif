@@ -4,13 +4,49 @@ import { User, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 
 const Login = ({ onLoginSuccess }) => {
   const [isRegister, setIsRegister] = useState(false);
+  
+  const inputStyle = {
+    width: '100%',
+    padding: '14px 14px 14px 45px',
+    background: '#0f172a',
+    border: '1px solid #334155',
+    borderRadius: '12px',
+    color: 'white',
+    fontSize: '14px',
+    outline: 'none',
+    transition: '0.3s'
+  };
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // New Registration Fields
+  const [companyName, setCompanyName] = useState('');
+  const [email, setEmail] = useState('');
+  const [slogan, setSlogan] = useState('');
+  const [website, setWebsite] = useState('');
+  const [logo, setLogo] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setLogo(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isRegister && password !== confirmPassword) {
+      setError('Şifreler uyuşmuyor');
+      return;
+    }
+    
     setLoading(true);
     setError('');
 
@@ -22,11 +58,17 @@ const Login = ({ onLoginSuccess }) => {
       if (url) baseUrl = url;
     }
 
+    const payload = isRegister ? {
+      username, password, companyName, email, slogan, website, logo
+    } : {
+      username, password
+    };
+
     try {
       const response = await fetch(`${baseUrl}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -38,6 +80,13 @@ const Login = ({ onLoginSuccess }) => {
       if (isRegister) {
         setIsRegister(false);
         setError('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+        // Reset fields
+        setConfirmPassword('');
+        setCompanyName('');
+        setEmail('');
+        setSlogan('');
+        setWebsite('');
+        setLogo(null);
       } else {
         localStorage.setItem('reklamcu_token', data.token);
         localStorage.setItem('reklamcu_user', JSON.stringify(data.user));
@@ -64,13 +113,14 @@ const Login = ({ onLoginSuccess }) => {
         animate={{ opacity: 1, y: 0 }}
         style={{
           width: '100%',
-          maxWidth: '400px',
+          maxWidth: isRegister ? '500px' : '400px',
           background: 'rgba(30, 41, 59, 0.7)',
           backdropFilter: 'blur(10px)',
           padding: '40px',
           borderRadius: '24px',
           border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+          transition: 'max-width 0.3s ease'
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
@@ -96,7 +146,7 @@ const Login = ({ onLoginSuccess }) => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '25px' }}>
             <div style={{ position: 'relative' }}>
               <User size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
               <input 
@@ -105,22 +155,10 @@ const Login = ({ onLoginSuccess }) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '14px 14px 14px 45px',
-                  background: '#0f172a',
-                  border: '1px solid #334155',
-                  borderRadius: '12px',
-                  color: 'white',
-                  fontSize: '14px',
-                  outline: 'none',
-                  transition: '0.3s'
-                }}
+                style={inputStyle}
               />
             </div>
-          </div>
 
-          <div style={{ marginBottom: '30px' }}>
             <div style={{ position: 'relative' }}>
               <Lock size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
               <input 
@@ -129,19 +167,38 @@ const Login = ({ onLoginSuccess }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '14px 14px 14px 45px',
-                  background: '#0f172a',
-                  border: '1px solid #334155',
-                  borderRadius: '12px',
-                  color: 'white',
-                  fontSize: '14px',
-                  outline: 'none',
-                  transition: '0.3s'
-                }}
+                style={inputStyle}
               />
             </div>
+
+            {isRegister && (
+              <>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                  <input 
+                    type="password" 
+                    placeholder="Şifre Tekrar"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '10px 0' }} />
+
+                <input type="text" placeholder="Firma Adı" value={companyName} onChange={e => setCompanyName(e.target.value)} required style={inputStyle} />
+                <input type="email" placeholder="E-posta Adresi" value={email} onChange={e => setEmail(e.target.value)} required style={inputStyle} />
+                <input type="text" placeholder="Slogan" value={slogan} onChange={e => setSlogan(e.target.value)} style={inputStyle} />
+                <input type="text" placeholder="Websitesi" value={website} onChange={e => setWebsite(e.target.value)} style={inputStyle} />
+                
+                <div style={{ marginTop: '5px' }}>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#94a3b8', marginBottom: '8px', fontWeight: '800' }}>FİRMA LOGOSU (.PNG / .JPG)</label>
+                  <input type="file" accept="image/*" onChange={handleLogoChange} style={{ fontSize: '12px', color: '#94a3b8' }} />
+                  {logo && <img src={logo} alt="Preview" style={{ height: '40px', marginTop: '10px', borderRadius: '4px' }} />}
+                </div>
+              </>
+            )}
           </div>
 
           <AnimatePresence>

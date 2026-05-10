@@ -65,15 +65,24 @@ async function startServer(dbPath = './database.sqlite') {
 
   // --- Auth Routes ---
   app.post('/api/auth/register', async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, companyName, email, slogan, website, logo } = req.body;
     try {
       const hashed = await bcrypt.hash(password, 10);
       const result = await db.run('INSERT INTO users (username, password_hash) VALUES (?, ?)', [username, hashed]);
-      await db.run('INSERT INTO company_info (user_id) VALUES (?)', [result.lastID]);
+      
+      // Update company_info with provided data
+      await db.run(
+        'INSERT INTO company_info (user_id, name, slogan, email, website, logo) VALUES (?, ?, ?, ?, ?, ?)', 
+        [result.lastID, companyName || 'Firma Adı', slogan || '', email || '', website || '', logo || null]
+      );
+      
+      // Also initialize app_parameters
       await db.run('INSERT INTO app_parameters (user_id) VALUES (?)', [result.lastID]);
+      
       res.status(201).json({ message: 'Kayıt başarılı' });
     } catch (e) {
-      res.status(400).json({ message: 'Kullanıcı adı kullanımda' });
+      console.error("Register Error:", e);
+      res.status(400).json({ message: 'Kullanıcı adı kullanımda veya geçersiz veri' });
     }
   });
 

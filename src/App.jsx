@@ -137,7 +137,7 @@ function App() {
           </button>
           <div style={{ textAlign: 'right', lineHeight: '1.1' }}>
             <div style={{ fontSize: '9px', fontWeight: '900', color: '#f97316' }}>V40 {data.appTag || 'AETHER'}</div>
-            <div style={{ fontSize: '8px', color: '#64748b' }}>Version 3.0.0.0</div>
+            <div style={{ fontSize: '8px', color: '#64748b' }}>Version 3.0.0.1</div>
           </div>
 
           <button 
