@@ -1,0 +1,84 @@
+{
+  "name": "teklif360",
+  "productName": "Teklif360",
+  "version": "3.0.1",
+  "description": "Profesyonel Teklif Hazırlama Sistemi",
+  "main": "main.cjs",
+  "author": "Siento Creative",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "electron:dev": "electron .",
+    "electron:build": "npm run build && npx electron-builder",
+    "postinstall": "electron-rebuild"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "electron-is-dev": "^2.0.0",
+    "electron-updater": "^6.3.9",
+    "express": "^4.21.2",
+    "framer-motion": "^12.38.0",
+    "html2canvas": "^1.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^1.14.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "app-builder-bin": "^4.2.0",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "electron-rebuild": "^3.2.9",
+    "vite": "^8.0.10"
+  },
+  "build": {
+    "appId": "com.siento.teklif360",
+    "productName": "Teklif360",
+    "copyright": "Copyright © 2026 Siento Creative",
+    "directories": {
+      "output": "dist_electron"
+    },
+    "files": [
+      "dist/**/*",
+      "backend/**/*",
+      "main.cjs",
+      "preload.cjs",
+      "package.json"
+    ],
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Teklif360",
+      "license": "license.txt",
+      "unicode": true,
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "${productName} Setup ${version}.${ext}",
+      "uninstallDisplayName": "Teklif360 Kaldır",
+      "runAfterFinish": true
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "sientocreative-alt",
+        "repo": "360teklif"
+      }
+    ]
+  }
+}

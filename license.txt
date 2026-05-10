@@ -1,0 +1,15 @@
+TEKLİF360 YAZILIM KULLANIM SÖZLEŞMESİ
+
+1. LİSANS KOŞULLARI
+Bu yazılımın tüm hakları Teklif360'a aittir. Yazılımın izinsiz kopyalanması, çoğaltılması veya tersine mühendislik işlemlerine tabi tutulması yasaktır.
+
+2. KULLANIM ŞARTLARI
+Kullanıcı, bu yazılımı yalnızca kendi ticari faaliyetleri için teklif hazırlama amacıyla kullanabilir. Yazılımın üçüncü şahıslara kiralanması veya satılması yasaktır.
+
+3. SORUMLULUK SINIRI
+Yazılımda yer alan hesaplamalar genel bilgilendirme amaçlıdır. Kullanıcı, hazırladığı tekliflerin doğruluğunu kontrol etmekle yükümlüdür. Hesaplama hatalarından doğabilecek zararlardan üretici sorumlu tutulamaz.
+
+4. GÜNCELLEMELER
+Yazılım, internet bağlantısı olduğunda otomatik olarak güncellenebilir. Güncelleme sonrası verilerinizin korunması için düzenli yedekleme yapmanız önerilir.
+
+Bu sözleşmeyi kabul ederek kurulumu tamamladığınızda yukarıdaki şartları kabul etmiş sayılırsınız.
